@@ -8,7 +8,10 @@ make_motion2.py(단일 스크립트 시절)의 씬 부분을 모듈로 옮긴 �
 import math
 import random
 
-from engine import catmull, stroke, hatch, fill_ink, ellipse_poly, blob, Layer, smoothstep
+from PIL import Image
+
+from engine import (W, H, catmull, stroke, hatch, fill_ink, ellipse_poly, blob,
+                    Layer, smoothstep)
 
 # 캐릭터 자세: 앞으로 살짝 숙여 책을 보는 각도
 P_DY = 0
@@ -47,15 +50,18 @@ HIP_PT = (1100, 830)
 KNEE_PT = (830, 610)
 FOOT_PT = (740, 870)
 
+# 인물·책 그룹을 우하단으로 밀어 말풍선을 강조한다 (좌표 개별 수정 없이 그룹 이동)
+SX, SY = 56, 40
+
 # 생각풍선 위치 (책 읽는 캐릭터 위쪽)
-BUBBLE_C = (480.0, 240.0)
-BUBBLE_RX, BUBBLE_RY = 340.0, 168.0
-TRAILS = [((880, 380), 22.0), ((820, 340), 13.0), ((780, 310), 7.0)]
+BUBBLE_C = (480.0, 252.0)
+BUBBLE_RX, BUBBLE_RY = 400.0, 205.0
+TRAILS = [((940, 420), 24.0), ((886, 394), 14.0), ((844, 378), 8.0)]
 
 TYPING_T0, TYPING_T1 = 7.9, 10.4
 TEXT_LINES = ("종이 위 작은 활자 속에", "끝없는 우주가 담겨 있다")
-TEXT_SIZE = 52
-TEXT_DY = (-44, 46)
+TEXT_SIZE = 58
+TEXT_DY = (-52, 54)
 
 DESC = "풀밭에 앉아 책 읽는 사람"
 DUR = 13.8
@@ -231,17 +237,25 @@ def build_scene():
     for i, (c, r) in enumerate(TRAILS):
         ly = new("trail%d" % i, seed=81 + i)
         q = ellipse_poly(c[0], c[1], r, r * 0.94, n=22, rot=0.3 * i)
-        stroke(ly.d, q + [q[0]], value=(48, 48, 52), alpha=200, width=2.0, wob=1.0,
+        stroke(ly.d, q + [q[0]], value=(48, 48, 52), alpha=200, width=2.2, wob=1.0,
                seed=81 + i, passes=2)
 
     cloud = new("cloud", seed=91, blur=0.5)
     q = blob(BUBBLE_C[0], BUBBLE_C[1], BUBBLE_RX, BUBBLE_RY, bumps=9, seed=92)
-    stroke(cloud.d, q + [q[0]], value=(40, 40, 44), alpha=218, width=2.8, wob=1.6,
+    stroke(cloud.d, q + [q[0]], value=(40, 40, 44), alpha=222, width=3.4, wob=1.6,
            seed=93, passes=2, skip=0.03, step=6)
     q2 = blob(BUBBLE_C[0], BUBBLE_C[1] + 4, BUBBLE_RX * 0.985, BUBBLE_RY * 0.985,
               bumps=9, seed=92)
-    stroke(cloud.d, q2 + [q2[0]], value=(120, 120, 124), alpha=110, width=1.6, wob=1.4,
+    stroke(cloud.d, q2 + [q2[0]], value=(120, 120, 124), alpha=110, width=1.8, wob=1.4,
            seed=94, passes=1, skip=0.12, step=6)
+
+    # 인물·책 그룹을 (SX, SY)만큼 우하단으로 이동 (좌표 개별 수정 없이 그룹 이동)
+    if SX or SY:
+        for name in ("legs", "torso", "head", "arm", "book"):
+            ly = L[name]
+            moved = Image.new("RGB", (W, H), (255, 255, 255))
+            moved.paste(ly.img, (SX, SY))
+            ly.img = moved
 
     for ly in L.values():
         ly.prep()
