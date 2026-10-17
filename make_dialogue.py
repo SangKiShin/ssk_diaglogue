@@ -88,7 +88,7 @@ def wrap_text(s, font, maxw):
 
 def fit_text(s):
     """풍선 안에 맞는 폰트 크기·줄바꿈 결정."""
-    for size in (52, 44, 38, 32, 26, 22):
+    for size in (64, 56, 48, 40, 32, 26, 22):
         f = ImageFont.truetype(FONT_B, size)
         lines = wrap_text(s, f, TEXT_MAXW)
         lh = size * 1.42
@@ -138,7 +138,7 @@ def draw_bubble_text(bbox, font, lines, lh, t0, t1, t, fade):
                 yc = y_first + k * lh - y0
                 blink = 0.5 + 0.5 * math.sin(2 * math.pi * 2.2 * (t - t0))
                 if t > t1 - 0.05 or blink > 0.25:
-                    d.line([(xc - 4, yc - 24), (xc + 1, yc + 26)],
+                    d.line([(xc - 4, yc - 28), (xc + 1, yc + 30)],
                            fill=(58, 58, 62, int(150 * fade)), width=2)
                 break
             cum += len(s)

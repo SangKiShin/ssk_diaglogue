@@ -76,9 +76,11 @@ THIGH = [(1206, 654), (1100, 662), (1000, 668), (912, 678)]
 SHIN = [(912, 678), (902, 772), (898, 862)]
 FOOT = [(898, 864), (894, 898), (830, 898), (818, 886), (838, 878), (896, 862)]
 FAR_LEG = [(1220, 660), (962, 692), (952, 872), (892, 894)]
-BUBBLE_C = (500.0, 262.0)
-BUBBLE_RX, BUBBLE_RY = 320.0, 168.0
-TRAILS = [((902, 320), 22.0), ((868, 298), 13.0), ((840, 280), 7.0)]
+# 인물·벤치 그룹을 우하단으로 밀어 말풍선이 화면을 크게 차지하게 한다
+SX, SY = 260, 140
+BUBBLE_C = (540.0, 340.0)
+BUBBLE_RX, BUBBLE_RY = 470.0, 300.0
+TRAILS = [((1150, 470), 30.0), ((1096, 432), 20.0), ((1050, 398), 12.0)]
 
 
 def clip01(v):
@@ -401,21 +403,21 @@ def build_scene():
                    value=(78, 78, 82), alpha=165, width=1.5, wob=1.0,
                    seed=int(x + sgn), passes=1, skip=0.04, step=5)
     # 먼 나무(왼쪽) + 덤불(오른쪽) — 만화 배경 요소
-    stroke(d, [(240, 902), (248, 796), (244, 690), (248, 640)], value=(84, 84, 88), alpha=200,
+    stroke(d, [(190, 902), (198, 800), (194, 700), (198, 672)], value=(84, 84, 88), alpha=200,
            width=3.6, wob=1.4, seed=71)
-    stroke(d, [(266, 900), (260, 800), (256, 700), (258, 648)], value=(118, 118, 122), alpha=120,
+    stroke(d, [(214, 900), (208, 800), (204, 706), (206, 678)], value=(118, 118, 122), alpha=120,
            width=2.0, wob=1.2, seed=72, passes=1)
-    can = blob(252, 566, 96, 74, bumps=8, seed=73)
+    can = blob(200, 620, 80, 60, bumps=8, seed=73)
     stroke(d, can + [can[0]], value=(72, 72, 76), alpha=190, width=2.4, wob=1.4,
            seed=74, passes=2, step=6)
     hatch(d, [can], angle=-35, spacing=12, value=(130, 130, 134), alpha=60, seed=75,
           dash=(14, 30, 12), width=1.4)
-    bsh = blob(1690, 812, 66, 26, bumps=6, seed=76, amp=0.12)
+    bsh = blob(1832, 824, 66, 26, bumps=6, seed=76, amp=0.12)
     stroke(d, bsh + [bsh[0]], value=(84, 84, 88), alpha=170, width=2.0, wob=1.2,
            seed=77, passes=1, step=5)
     hatch(d, [bsh], angle=15, spacing=9, value=(124, 124, 128), alpha=70, seed=78,
           dash=(10, 24, 10), width=1.2)
-    for (gx, gy) in ((1652, 834), (1698, 838), (1726, 830)):
+    for (gx, gy) in ((1790, 846), (1842, 852), (1872, 844)):
         stroke(d, [(gx, gy), (gx - 4, gy + 13)], value=(110, 110, 114), alpha=110,
                width=1.3, wob=0.5, seed=gx % 83, passes=1, step=4)
 
@@ -586,16 +588,24 @@ def build_scene():
     for i, (c, r) in enumerate(TRAILS):
         ly = new("trail%d" % i, seed=81 + i)
         q = ellipse_poly(c[0], c[1], r, r * 0.94, n=22, rot=0.3 * i)
-        stroke(ly.d, q + [q[0]], value=(48, 48, 52), alpha=200, width=2.0, wob=1.0,
+        stroke(ly.d, q + [q[0]], value=(48, 48, 52), alpha=200, width=2.2, wob=1.0,
                seed=81 + i, passes=2)
     cloud = new("cloud", seed=91, blur=0.5)
     q = blob(BUBBLE_C[0], BUBBLE_C[1], BUBBLE_RX, BUBBLE_RY, bumps=9, seed=92)
-    stroke(cloud.d, q + [q[0]], value=(40, 40, 44), alpha=218, width=2.8, wob=1.6,
+    stroke(cloud.d, q + [q[0]], value=(40, 40, 44), alpha=222, width=3.4, wob=1.6,
            seed=93, passes=2, skip=0.03, step=6)
     q2 = blob(BUBBLE_C[0], BUBBLE_C[1] + 4, BUBBLE_RX * 0.985, BUBBLE_RY * 0.985,
               bumps=9, seed=92)
-    stroke(cloud.d, q2 + [q2[0]], value=(120, 120, 124), alpha=110, width=1.6, wob=1.4,
+    stroke(cloud.d, q2 + [q2[0]], value=(120, 120, 124), alpha=110, width=1.8, wob=1.4,
            seed=94, passes=1, skip=0.12, step=6)
+
+    # 인물·벤치 그룹을 (SX, SY)만큼 우하단으로 이동 (좌표 개별 수정 없이 그룹 이동)
+    if SX or SY:
+        for name in ("bench", "legs", "torso", "head", "arm"):
+            ly = L[name]
+            moved = Image.new("RGB", (W, H), (255, 255, 255))
+            moved.paste(ly.img, (SX, SY))
+            ly.img = moved
 
     for ly in L.values():
         ly.prep()
@@ -708,14 +718,14 @@ def draw_text(layer_bbox, t):
     cw, ch = x1 - x0, y1 - y0
     img = Image.new("RGB", (cw, ch), (255, 255, 255))
     d = ImageDraw.Draw(img, "RGBA")
-    f = ImageFont.truetype(FONT_B, 52)
+    f = ImageFont.truetype(FONT_B, 64)
     full = LINE1 + LINE2
     n = len(full)
     p = clip01((t - TYPING_T0) / (TYPING_T1 - TYPING_T0))
     shown = int(math.floor(p * (n + 0.001)))
     cx = BUBBLE_C[0]
-    y1c = BUBBLE_C[1] - 44
-    y2c = BUBBLE_C[1] + 46
+    y1c = BUBBLE_C[1] - 58
+    y2c = BUBBLE_C[1] + 60
     total1 = f.getlength(LINE1)
     total2 = f.getlength(LINE2)
     rnd = random.Random(5)
