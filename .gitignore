@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+
+# 재생성 가능한 산출물 (make_motion.py / make_dialogue.py 실행으로 생성)
+out/
+preview/
