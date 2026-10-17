@@ -4,6 +4,40 @@
 닫힌 형태)·진한 머리 뭉치·단색 그림자에 워블/끊김 스트로크와 해칭을 유지하고, 사람·벤치·
 해칭·그레인·문구를 전부 코드로 그려 ffmpeg로 mp4 인코딩한다(이미지 생성 모델 미사용).
 
+## 구성 관계
+
+두 스크립트는 **실행 순서 의존이 아니라 소스 import 의존**이다.
+
+```
+make_motion.py  ← 그림 엔진 (씬 레이어·모션·질감 함수)
+   │
+   ├─ 단독 실행(render)  → out/charcoal_bench.mp4   (13.8초 고정 문구 컷)
+   │
+   └─ import ← make_dialogue.py                     (타이밍·텍스트만 추가)
+        └─ 단독 실행         → out/dialogue_bench.mp4
+```
+
+- `make_dialogue.py`는 실행마다 `make_motion.build_scene()`을 새로 호출해 모든 프레임을
+  자체 렌더한다. make_motion이 미리 만든 mp4는 입력이 아니므로 **make_motion 실행 없이
+  바로** `make_dialogue.py`를 돌릴 수 있다. 필요한 건 두 파일이 같은 디렉터리에 있을 것뿐.
+- 역할 분리 — **그림**(무엇을 어떻게 그릴까)은 `make_motion.py`, **연출**(언제 어떤 문구를
+  말풍선으로 띄울까)은 `make_dialogue.py`가 담당한다. 그림을 바꾸고 싶으면 make_motion.py만,
+  대사·타이밍만 바꾸고 싶으면 make_dialogue.py(또는 txt)만 고치면 된다.
+
+### `make_motion.py` 수정이 대사 영상에 반영되는 범위
+
+make_motion.py를 고치고 다시 실행하면 그림이 그대로 바뀐다.
+
+| 수정 대상 | 반영 |
+|---|---|
+| 그림(지오메트리·선·채움·색·해칭·배경 소품) | 자동 |
+| 말풍선 위치·크기(`BUBBLE_C`, `BUBBLE_RX/RY`, `TRAILS`) | 자동 — 텍스트 폭/줄바꿈 한계도 파생 |
+| 리빌 타이밍(`reveal=(시작, 끝)`) | 자동 — 첫 말풍선 시각이 마지막 리빌 종료 + 0.5s로 유도됨 |
+| 종이 질감·비네팅·그레인·먼지 | 자동 |
+| 레이어 이름(`bg/bench/legs/torso/head/arm/trail0-2/cloud`) | **계약** — 이름을 바꾸면 make_dialogue 합성 순서도 고쳐야 함 |
+| 호흡 시작 시각(5.6s, `person_bob` 등 내부) | 하드코딩 — 리빌을 크게 늘렸다면 함께 수정 |
+| `out/charcoal_bench.mp4` (make_motion 실행 결과) | **무관** — 대사 영상의 입력이 아니다 |
+
 ## 산출물
 
 | 파일 | 내용 |
@@ -41,20 +75,6 @@ python3 make_dialogue.py my.txt -o out/x.mp4 --cps 12 --hold 1.2
 | `--poster-t` | 마지막 줄 hold 중간 | 포스터 시각(초) |
 
 긴 줄은 풍선 안에서 자동 줄바꿈하고, 3줄을 넘으면 폰트를 52→22까지 줄여 맞춘다.
-
-### `make_motion.py` 수정이 대사 영상에 반영되는 범위
-
-`make_dialogue.py`는 실행마다 `make_motion.build_scene()`을 새로 호출하므로
-make_motion.py를 고치고 다시 실행하면 그림이 그대로 바뀐다.
-
-| 수정 대상 | 반영 |
-|---|---|
-| 그림(지오메트리·선·채움·색·해칭·배경 소품) | 자동 |
-| 말풍선 위치·크기(`BUBBLE_C`, `BUBBLE_RX/RY`, `TRAILS`) | 자동 — 텍스트 폭/줄바꿈 한계도 파생 |
-| 리빌 타이밍(`reveal=(시작, 끝)`) | 자동 — 첫 말풍선 시각이 마지막 리빌 종료 + 0.5s로 유도됨 |
-| 종이 질감·비네팅·그레인·먼지 | 자동 |
-| 레이어 이름(`bg/bench/legs/torso/head/arm/trail0-2/cloud`) | **계약** — 이름을 바꾸면 make_dialogue 합성 순서도 고쳐야 함 |
-| 호흡 시작 시각(5.6s, `person_bob` 등 내부) | 하드코딩 — 리빌을 크게 늘렸다면 함께 수정 |
 
 ## 구성
 
