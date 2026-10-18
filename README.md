@@ -14,6 +14,7 @@ engine.py  ← 그림 엔진 (스트로크·해칭·레이어·질감·후처리
    │
    ├─ scene_bench.py    벤치 씬   (지오메트리·레이어·모션·씬 메타)
    ├─ scene_reading.py  풀밭 독서 씬
+   ├─ scene_guitar.py   클래식 기타 연주 씬
    │
    ├─ make_motion.py    단독 컷 CLI   → out/charcoal_<씬>.mp4 + <씬> 포스터
    └─ make_dialogue.py  대사 시퀀스 CLI → out/dialogue_<씬>.mp4
@@ -33,6 +34,7 @@ engine.py  ← 그림 엔진 (스트로크·해칭·레이어·질감·후처리
 |---|---|---|
 | `bench` (기본) | 벤치에 앉아 생각하는 사람 | `out/charcoal_bench.mp4` |
 | `reading` | 풀밭에 무릎 세우고 책 읽는 사람 | `out/charcoal_reading.mp4` |
+| `guitar` | 클래식 기타를 연주하는 사람 | `out/charcoal_guitar.mp4` |
 
 ## 사용법
 
@@ -110,6 +112,7 @@ python3 make_dialogue.py my.txt --scene reading -o out/x.mp4 --cps 12 --hold 1.2
 |---|---|
 | `out/charcoal_bench.mp4` | bench 단독 컷 · 1920×1080 · 30fps · 13.8초 · h264(crf21) · 무음 |
 | `out/charcoal_reading.mp4` | reading 단독 컷 · 동일 사양 |
+| `out/charcoal_guitar.mp4` | guitar 단독 컷 · 동일 사양 |
 | `out/poster.png` / `out/reading_poster.png` | 씬별 대표 정지컷(t=12.2s) |
 | `out/dialogue_<씬>.mp4` + `out/dialogue_<씬>_poster.png` | 대사 시퀀스 결과 |
 | `preview/` | 제작 중 확인용 스틸(`t*.png` 단독, `dt*.png` 대사) |
@@ -126,6 +129,10 @@ python3 make_dialogue.py my.txt --scene reading -o out/x.mp4 --cps 12 --hold 1.2
   1.9s 벤치 → 3.0s 다리 → 3.5s 몸통 → 4.2s 머리 → 4.8s 팔 순.
 - **reading 씬**: 언덕 풀밭 + 멀리 나무 / 무릎 세운 다리·숙인 상체·감은 눈·펼친 책 레이어.
   리빌은 0.7s 배경 → 1.8s 다리 → 2.5s 몸통 → 3.2s 머리 → 3.8s 팔 → 4.0s 책 순.
+- **guitar 씬**: 바닥 + 뮤직 스탠드 / 스툴에 앉은 다리·상체·머리 / 몸통·넥·사운드홀·6현을
+  로컬 좌표(넥이 -y)로 그린 뒤 `G_ANG`(-40°) 회전해 눕힌 클래식 기타 / 넥을 짚는 왼팔·
+  스트럼하는 오른팔. 리빌은 0.7s 배경 → 1.4s 스탠드 → 1.8s 스툴 → 2.6s 다리 → 3.3s 몸통
+  → 4.0s 머리 → 4.4s 기타 → 4.9s 왼팔 → 5.0s 오른팔 순. 생각풍선은 우상단(넥과 안 겹침).
 
 폰트는 NanumSquareB(`/usr/share/fonts/truetype/nanum/NanumSquareB.ttf`).
 레이어별 `gain`은 잉크 진하기, `blur`는 목탄 번짐 정도다.
